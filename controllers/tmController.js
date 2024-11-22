@@ -58,3 +58,41 @@ exports.validateBoxWithAddress = async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера', error: err.message });
     }
 };
+
+exports.addFullInfo = async (req, res) => {
+    const { eo, order_name, zayavka, sn, address, client } = req.body;
+
+    // Проверка наличия обязательных данных
+    if (!eo || !order_name || !zayavka || !sn || !address || !client) {
+        return res.status(400).json({ message: 'Все поля, кроме mesto, обязательны' });
+    }
+
+    const query = `
+        INSERT INTO TM_full_info (eo, order_name, zayavka, sn, address, client, mesto)
+        VALUES (@eo, @order_name, @zayavka, @sn, @address, @client, @mesto);
+        SELECT SCOPE_IDENTITY() AS id; -- Получаем ID последней вставленной записи
+    `;
+
+    try {
+        // Выполнение запроса
+        const result = await executeQuery(query, {
+            eo,
+            order_name,
+            zayavka,
+            sn,
+            address,
+            client,
+            mesto: 1, // Значение поля mesto всегда равно 1
+        });
+
+        const insertedId = result[0]?.id;
+
+        res.status(200).json({
+            message: 'Данные успешно добавлены',
+            id: insertedId,
+        });
+    } catch (err) {
+        console.error('Ошибка добавления данных:', err);
+        res.status(500).json({ message: 'Ошибка сервера', error: err.message });
+    }
+};

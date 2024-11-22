@@ -4,7 +4,7 @@ info:
   description: API для управления коробками, паллетами и их проверками.
   version: 1.0.0
 servers:
-  - url: http://localhost:3000/api
+  - url: https://corrywillia,s/api
     description: Локальный сервер
 paths:
   /sortedData:
@@ -182,3 +182,77 @@ paths:
                   message:
                     type: string
                     example: "Ошибка сервера"
+  /addFullInfo:
+    post:
+      summary: Добавление данных в TM_full_info
+      description: Добавляет запись в таблицу TM_full_info с обязательными данными.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eo:
+                  type: string
+                  example: "EO123456"
+                  description: Код EO.
+                order_name:
+                  type: string
+                  example: "Order001"
+                  description: Название заказа.
+                zayavka:
+                  type: string
+                  example: "Zayavka001"
+                  description: Название заявки.
+                sn:
+                  type: string
+                  example: "SN123456"
+                  description: Серийный номер (SN).
+                address:
+                  type: string
+                  example: "Main Street 123"
+                  description: Адрес клиента.
+                client:
+                  type: string
+                  example: "Client A"
+                  description: Имя клиента.
+      responses:
+        '200':
+          description: Данные успешно добавлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные успешно добавлены"
+                  id:
+                    type: integer
+                    example: 101
+                    description: ID добавленной записи.
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Все поля, кроме mesto, обязательны"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
