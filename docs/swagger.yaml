@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: TM Management API
+  description: API для управления коробками, паллетами и их проверками.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Локальный сервер
+paths:
+  /sortedData:
+    get:
+      summary: Получение данных сортировки по SSCC
+      description: Возвращает данные на основе указанного SSCC из базы данных.
+      parameters:
+        - in: query
+          name: sscc
+          required: true
+          schema:
+            type: string
+            example: "020199010440489960"
+          description: Уникальный идентификатор коробки (SSCC).
+      responses:
+        '200':
+          description: Успешный ответ с данными
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rsd_code:
+                      type: string
+                      example: "БЛ"
+                      description: Код RSD.
+                    rsd_every_day_num:
+                      type: integer
+                      example: 4
+                      description: Номер, обновляемый ежедневно.
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметр sscc обязателен"
+        '404':
+          description: Данные не найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные не найдены для указанного SSCC"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+  /completeSort:
+    post:
+      summary: Завершение сортировки
+      description: Добавляет данные о завершении сортировки в базу данных.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                palletNumber:
+                  type: string
+                  example: "KR-5-21.1"
+                  description: Уникальный номер паллеты.
+                items:
+                  type: array
+                  items:
+                    type: string
+                  example: ["item1", "item2", "item3"]
+                  description: Список элементов, входящих в паллету.
+      responses:
+        '200':
+          description: Успешное завершение сортировки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Сортировка завершена"
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Необходимо указать palletNumber и items"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+  /tm/validateBox:
+    post:
+      summary: Проверка коробки на соответствие адресу
+      description: Проверяет, подходит ли коробка (по SSCC) к адресу (паллета).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sscc:
+                  type: string
+                  example: "020199010440489960"
+                  description: Уникальный идентификатор коробки (SSCC)
+                pallet_scanned:
+                  type: string
+                  example: "BL-4"
+                  description: Адрес паллета (сканированный)
+      responses:
+        '200':
+          description: Успешная проверка
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Коробка подходит к адресу"
+                  valid:
+                    type: boolean
+                    example: true
+        '400':
+          description: Ошибка валидации или неверный формат данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Неверный формат адреса (ожидается формат BL-7)"
+        '404':
+          description: SSCC не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные не найдены для указанного SSCC"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
