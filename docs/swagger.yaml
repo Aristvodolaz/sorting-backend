@@ -4,7 +4,7 @@ info:
   description: API для управления коробками, паллетами, проверками и сортировкой.
   version: 1.0.0
 servers:
-  - url: http://localhost:3000/api
+  - url: http://31.128.44.48:3000/api
     description: Локальный сервер
 
 paths:
