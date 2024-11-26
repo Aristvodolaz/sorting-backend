@@ -3,12 +3,10 @@ const { executeQuery } = require('../config/database');
 exports.validateBoxWithAddress = async (req, res) => {
     const { sscc, pallet_scanned } = req.body;
 
-    // Проверяем наличие обязательных параметров
     if (!sscc || !pallet_scanned) {
         return res.status(400).json({ message: 'Параметры sscc и pallet_scanned обязательны' });
     }
 
-    // SQL-запрос для получения данных по SSCC
     const query = `
         SELECT *
         FROM OPENQUERY(OW,
@@ -23,17 +21,14 @@ exports.validateBoxWithAddress = async (req, res) => {
     `;
 
     try {
-        // Выполняем запрос
         const data = await executeQuery(query);
 
         if (data.length === 0) {
             return res.status(404).json({ message: 'Данные не найдены для указанного SSCC' });
         }
 
-        // Извлекаем значения RSD_CODE и RSD_EVERY_DAY_NUM
         const { RSD_CODE, RSD_EVERY_DAY_NUM } = data[0];
 
-        // Логика проверки: извлекаем код адреса из паллета
         const addressParts = pallet_scanned.split('-');
         if (addressParts.length !== 2 || isNaN(addressParts[1])) {
             return res.status(400).json({ message: 'Неверный формат адреса (ожидается формат BL-7)' });
@@ -42,7 +37,6 @@ exports.validateBoxWithAddress = async (req, res) => {
         const palletRsdCode = addressParts[0];
         const palletZn = parseInt(addressParts[1], 10);
 
-        // Проверяем соответствие данных
         if (palletRsdCode === RSD_CODE && palletZn === RSD_EVERY_DAY_NUM) {
             return res.status(200).json({ message: 'Коробка подходит к адресу', valid: true });
         } else {
@@ -59,10 +53,10 @@ exports.validateBoxWithAddress = async (req, res) => {
     }
 };
 
+// Добавление данных в TM_full_info
 exports.addFullInfo = async (req, res) => {
     const { eo, order_name, zayavka, sn, address, client } = req.body;
 
-    // Проверка наличия обязательных данных
     if (!eo || !order_name || !zayavka || !sn || !address || !client) {
         return res.status(400).json({ message: 'Все поля, кроме mesto, обязательны' });
     }
@@ -74,7 +68,6 @@ exports.addFullInfo = async (req, res) => {
     `;
 
     try {
-        // Выполнение запроса
         const result = await executeQuery(query, {
             eo,
             order_name,
@@ -93,6 +86,31 @@ exports.addFullInfo = async (req, res) => {
         });
     } catch (err) {
         console.error('Ошибка добавления данных:', err);
+        res.status(500).json({ message: 'Ошибка сервера', error: err.message });
+    }
+};
+
+// Получение списка данных из TM_full_info
+exports.getFullInfoList = async (req, res) => {
+    const query = `
+        SELECT *
+        FROM TM_full_info
+        ORDER BY ID DESC;
+    `;
+
+    try {
+        const data = await executeQuery(query);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Список пуст' });
+        }
+
+        res.status(200).json({
+            message: 'Список успешно получен',
+            data,
+        });
+    } catch (err) {
+        console.error('Ошибка получения списка:', err);
         res.status(500).json({ message: 'Ошибка сервера', error: err.message });
     }
 };

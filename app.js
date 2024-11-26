@@ -8,6 +8,7 @@ const swaggerDocument = YAML.load('./docs/swagger.yaml'); // Укажите пу
 
 const sortingRoutes = require('./routes/sortingRoutes');
 const tmRoutes = require('./routes/tmRoutes');
+const cargoRoutes = require('./routes/cargoRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(bodyParser.json());
 // Подключение маршрутов
 app.use('/api', sortingRoutes);
 app.use('/api/tm', tmRoutes);
+app.use('/api/cargo', cargoRoutes);
 
 
 // Запуск сервера

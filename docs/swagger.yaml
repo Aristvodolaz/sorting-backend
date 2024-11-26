@@ -1,127 +1,83 @@
 openapi: 3.0.0
 info:
-  title: TM Management API
-  description: API для управления коробками, паллетами и их проверками.
+  title: Backend API
+  description: API для управления коробками, паллетами, проверками и сортировкой.
   version: 1.0.0
 servers:
-  - url: https://corrywillia,s/api
+  - url: http://localhost:3000/api
     description: Локальный сервер
+
 paths:
-  /sortedData:
+  /cargo/handleCargo:
     get:
-      summary: Получение данных сортировки по SSCC
-      description: Возвращает данные на основе указанного SSCC из базы данных.
+      summary: Получение данных по SSCC
+      description: Выполняет логику обработки на основе SSCC, извлекая данные из связанных таблиц. Возвращает `v.rsd_code` и `tr.rsd_every_day_num`, либо сообщение об ошибке.
       parameters:
         - in: query
           name: sscc
           required: true
           schema:
             type: string
-            example: "020199010440489960"
-          description: Уникальный идентификатор коробки (SSCC).
+            example: "120200000053183753"
+          description: Уникальный идентификатор SSCC.
       responses:
         '200':
-          description: Успешный ответ с данными
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    rsd_code:
-                      type: string
-                      example: "БЛ"
-                      description: Код RSD.
-                    rsd_every_day_num:
-                      type: integer
-                      example: 4
-                      description: Номер, обновляемый ежедневно.
-        '400':
-          description: Ошибка в запросе
+          description: Успешный ответ или неудачные сценарии
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
+                    example: false
+                    description: Указывает, успешен ли запрос (`true` или `false`).
                   message:
                     type: string
-                    example: "Параметр sscc обязателен"
-        '404':
-          description: Данные не найдены
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Данные не найдены для указанного SSCC"
-        '500':
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Ошибка сервера"
-  /completeSort:
-    post:
-      summary: Завершение сортировки
-      description: Добавляет данные о завершении сортировки в базу данных.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                palletNumber:
-                  type: string
-                  example: "KR-5-21.1"
-                  description: Уникальный номер паллеты.
-                items:
-                  type: array
-                  items:
-                    type: string
-                  example: ["item1", "item2", "item3"]
-                  description: Список элементов, входящих в паллету.
-      responses:
-        '200':
-          description: Успешное завершение сортировки
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Сортировка завершена"
-        '400':
-          description: Ошибка в запросе
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Необходимо указать palletNumber и items"
-        '500':
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Ошибка сервера"
+                    nullable: true
+                    example: "Отсканируйте коробку"
+                    description: Сообщение об ошибке или успехе.
+                  data:
+                    type: object
+                    nullable: true
+                    description: Данные возвращаются только при `success: true`.
+                    properties:
+                      rsd_code:
+                        type: string
+                        example: "БЛ"
+                        description: Код RSD.
+                      rsd_every_day_num:
+                        type: integer
+                        example: 4
+                        description: Номер, обновляемый ежедневно.
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: "Данные успешно обработаны"
+                    data:
+                      rsd_code: "БЛ"
+                      rsd_every_day_num: 4
+                error_missing_sscc:
+                  value:
+                    success: false
+                    message: "Параметр sscc обязателен"
+                error_cargo_unit_not_found:
+                  value:
+                    success: false
+                    message: "CARGO_UNIT_ID не найден"
+                error_multiple_records:
+                  value:
+                    success: false
+                    message: "Отсканируйте коробку"
+                error_server:
+                  value:
+                    success: false
+                    message: "Ошибка сервера"
+                    error: "Описание ошибки"
   /tm/validateBox:
     post:
-      summary: Проверка коробки на соответствие адресу
+      summary: Проверка коробки по адресу
       description: Проверяет, подходит ли коробка (по SSCC) к адресу (паллета).
       requestBody:
         required: true
@@ -133,14 +89,14 @@ paths:
                 sscc:
                   type: string
                   example: "020199010440489960"
-                  description: Уникальный идентификатор коробки (SSCC)
+                  description: Уникальный идентификатор коробки (SSCC).
                 pallet_scanned:
                   type: string
-                  example: "BL-4"
-                  description: Адрес паллета (сканированный)
+                  example: "BL-7"
+                  description: Адрес паллеты (сканированный).
       responses:
         '200':
-          description: Успешная проверка
+          description: Коробка подходит к адресу
           content:
             application/json:
               schema:
@@ -163,7 +119,7 @@ paths:
                     type: string
                     example: "Неверный формат адреса (ожидается формат BL-7)"
         '404':
-          description: SSCC не найден
+          description: Данные не найдены для указанного SSCC
           content:
             application/json:
               schema:
@@ -173,7 +129,7 @@ paths:
                     type: string
                     example: "Данные не найдены для указанного SSCC"
         '500':
-          description: Ошибка сервера
+          description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
@@ -182,7 +138,11 @@ paths:
                   message:
                     type: string
                     example: "Ошибка сервера"
-  /addFullInfo:
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /tm/addFullInfo:
     post:
       summary: Добавление данных в TM_full_info
       description: Добавляет запись в таблицу TM_full_info с обязательными данными.
@@ -231,7 +191,6 @@ paths:
                   id:
                     type: integer
                     example: 101
-                    description: ID добавленной записи.
         '400':
           description: Ошибка валидации данных
           content:
@@ -243,7 +202,7 @@ paths:
                     type: string
                     example: "Все поля, кроме mesto, обязательны"
         '500':
-          description: Ошибка сервера
+          description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
@@ -256,3 +215,193 @@ paths:
                     type: string
                     example: "Описание ошибки"
 
+  /tm/getFullInfo:
+    get:
+      summary: Получение списка из TM_full_info
+      description: Возвращает список данных из таблицы TM_full_info.
+      responses:
+        '200':
+          description: Список успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список успешно получен"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        eo:
+                          type: string
+                          example: "EO123456"
+                        order_name:
+                          type: string
+                          example: "Order001"
+                        zayavka:
+                          type: string
+                          example: "Zayavka001"
+                        sn:
+                          type: string
+                          example: "SN123456"
+                        address:
+                          type: string
+                          example: "Main Street 123"
+                        client:
+                          type: string
+                          example: "Client A"
+                        Cargo_UNIT_ID:
+                          type: string
+                          example: "Client A"
+                        mesto:
+                          type: integer
+                          example: 1
+                        ID:
+                          type: integer
+                          example: 101
+        '404':
+          description: Список пуст
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список пуст"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /sortedData:
+    get:
+      summary: Получение данных сортировки по SSCC
+      description: Возвращает данные на основе указанного SSCC из базы данных.
+      parameters:
+        - in: query
+          name: sscc
+          required: true
+          schema:
+            type: string
+            example: "020199010440489960"
+          description: Уникальный идентификатор коробки (SSCC).
+      responses:
+        '200':
+          description: Успешный ответ с данными
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rsd_code:
+                      type: string
+                      example: "БЛ"
+                      description: Код RSD.
+                    rsd_every_day_num:
+                      type: integer
+                      example: 4
+                      description: Номер, обновляемый ежедневно.
+        '400':
+          description: Параметр SSCC отсутствует
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметр sscc обязателен"
+        '404':
+          description: Данные не найдены для указанного SSCC
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные не найдены для указанного SSCC"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /completeSort:
+    post:
+      summary: Завершение сортировки
+      description: Добавляет данные о завершении сортировки в базу данных.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                palletNumber:
+                  type: string
+                  example: "KR-5-21.1"
+                  description: Уникальный номер паллеты.
+                items:
+                  type: array
+                  items:
+                    type: string
+                  example: ["item1", "item2", "item3"]
+                  description: Список элементов, входящих в паллету.
+      responses:
+        '200':
+          description: Сортировка успешно завершена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Сортировка завершена"
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Необходимо указать palletNumber и items"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
