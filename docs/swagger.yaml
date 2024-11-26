@@ -285,7 +285,175 @@ paths:
                   error:
                     type: string
                     example: "Описание ошибки"
+  /tm/registerAddressWithPallet:
+    post:
+      summary: Регистрация адреса и паллеты
+      description: Создает запись с адресом и паллетой, формируя уникальный EO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                  example: "BL-7"
+                  description: Сканированный адрес (например, BL-7).
+                palletNumber:
+                  type: string
+                  example: "KR-12345"
+                  description: Уникальный номер паллеты.
+      responses:
+        '200':
+          description: Адрес и паллета успешно зарегистрированы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Адрес и паллета зарегистрированы"
+                  value:
+                    type: object
+                    properties:
+                      address:
+                        type: string
+                        example: "BL-7"
+                      palletNumber:
+                        type: string
+                        example: "KR-12345"
+                      eo:
+                        type: string
+                        example: "BL-7-KR-12345"
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Параметры address и palletNumber обязательны"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
 
+  /tm/addBoxToPallet:
+    post:
+      summary: Добавление коробки на паллет
+      description: Проверяет соответствие коробки адресу, добавляет ее на паллет и записывает в базу.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sscc:
+                  type: string
+                  example: "020199010440489960"
+                  description: Уникальный идентификатор коробки (SSCC).
+                palletNumber:
+                  type: string
+                  example: "KR-12345"
+                  description: Уникальный номер паллеты.
+                address:
+                  type: string
+                  example: "BL-7"
+                  description: Сканированный адрес (например, BL-7).
+      responses:
+        '200':
+          description: Коробка успешно добавлена на паллет
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Коробка успешно добавлена на паллет"
+                  value:
+                    type: object
+                    properties:
+                      sscc:
+                        type: string
+                        example: "020199010440489960"
+                      palletNumber:
+                        type: string
+                        example: "KR-12345"
+                      address:
+                        type: string
+                        example: "BL-7"
+                      eo:
+                        type: string
+                        example: "BL-7-KR-12345"
+        '400':
+          description: Ошибка проверки соответствия или данные отсутствуют
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Коробка не подходит к указанному адресу"
+        '404':
+          description: Коробка не найдена в базе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Коробка не найдена в базе"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
   /sortedData:
     get:
       summary: Получение данных сортировки по SSCC
