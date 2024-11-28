@@ -9,6 +9,7 @@ const swaggerDocument = YAML.load('./docs/swagger.yaml'); // Укажите пу
 const sortingRoutes = require('./routes/sortingRoutes');
 const tmRoutes = require('./routes/tmRoutes');
 const cargoRoutes = require('./routes/cargoRoutes');
+const eoTcRoutes = require('./routes/tmEoTcRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 app.use('/api', sortingRoutes);
 app.use('/api/tm', tmRoutes);
 app.use('/api/cargo', cargoRoutes);
+app.use('api/eoTc/', eoTcRoutes)
 
 
 // Запуск сервера

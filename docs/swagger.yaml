@@ -573,3 +573,342 @@ paths:
                   error:
                     type: string
                     example: "Описание ошибки"
+    /tm-eo-tc/add:
+    post:
+      summary: Добавление связи EO-Транспортное средство
+      description: Добавляет запись в таблицу `TM_eo_tc` для связывания EO с транспортным средством.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eo:
+                  type: string
+                  example: "EO123456"
+                  description: Код логистического объекта EO.
+                tc:
+                  type: string
+                  example: "A123BC78"
+                  description: Номер транспортного средства.
+      responses:
+        '200':
+          description: Связь успешно добавлена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Связь EO и ТС успешно добавлена."
+                  id:
+                    type: integer
+                    example: 101
+        '400':
+          description: Неправильный запрос (например, отсутствует EO или TC)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметры eo и tc обязательны."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /eoTc/list:
+    get:
+      summary: Получение всех записей EO-Транспортное средство
+      description: Возвращает все записи из таблицы `TM_eo_tc`.
+      responses:
+        '200':
+          description: Список записей успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Список записей успешно получен."
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 101
+                        eo:
+                          type: string
+                          example: "EO123456"
+                        tc:
+                          type: string
+                          example: "A123BC78"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-28T14:00:00Z"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /eoTc/eo/{eo}:
+    get:
+      summary: Получение записей по EO
+      description: Возвращает записи из таблицы `TM_eo_tc`, связанные с указанным EO.
+      parameters:
+        - in: path
+          name: eo
+          required: true
+          schema:
+            type: string
+            example: "EO123456"
+          description: Код логистического объекта EO.
+      responses:
+        '200':
+          description: Записи для EO успешно получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Записи для EO EO123456 успешно получены."
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 101
+                        eo:
+                          type: string
+                          example: "EO123456"
+                        tc:
+                          type: string
+                          example: "A123BC78"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-28T14:00:00Z"
+        '400':
+          description: Неправильный запрос (например, отсутствует EO)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметр eo обязателен."
+        '404':
+          description: Записи для указанного EO не найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Записи для EO EO123456 не найдены."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+
+  /eoTc/tc/{tc}:
+    get:
+      summary: Получение записей по транспортному средству
+      description: Возвращает записи из таблицы `TM_eo_tc`, связанные с указанным транспортным средством.
+      parameters:
+        - in: path
+          name: tc
+          required: true
+          schema:
+            type: string
+            example: "A123BC78"
+          description: Номер транспортного средства.
+      responses:
+        '200':
+          description: Записи для ТС успешно получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Записи для ТС A123BC78 успешно получены."
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 101
+                        eo:
+                          type: string
+                          example: "EO123456"
+                        tc:
+                          type: string
+                          example: "A123BC78"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-28T14:00:00Z"
+        '400':
+          description: Неправильный запрос (например, отсутствует TC)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметр tc обязателен."
+        '404':
+          description: Записи для указанного ТС не найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Записи для ТС A123BC78 не найдены."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
+  /eoTc/add:
+    post:
+      summary: Добавление связи EO-Транспортное средство
+      description: Добавляет запись в таблицу `TM_eo_tc` для связывания EO с транспортным средством.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eo:
+                  type: string
+                  example: "EO123456"
+                  description: Код логистического объекта EO.
+                tc:
+                  type: string
+                  example: "A123BC78"
+                  description: Номер транспортного средства.
+      responses:
+        '200':
+          description: Связь успешно добавлена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Связь EO и ТС успешно добавлена."
+                  id:
+                    type: integer
+                    example: 101
+        '400':
+          description: Неправильный запрос (например, отсутствует EO или TC)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Параметры eo и tc обязательны."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+                  error:
+                    type: string
+                    example: "Описание ошибки"
